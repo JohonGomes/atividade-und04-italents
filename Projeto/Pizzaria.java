@@ -52,7 +52,6 @@ public class Pizzaria {
                     break;
             }
         }
-
     }
 
     private static void fazerPedido(Scanner scanner, List<Pedido> listaPedidos, List<Cliente> listaClientes) {
@@ -62,11 +61,11 @@ public class Pizzaria {
         int x = 1;
         System.out.println("Selecione um cliente: ");
         for (Cliente cliente : listaClientes) {
-            System.out.println(x+" - "+cliente.getNome());
+            System.out.println(x + " - " + cliente.getNome());
             x++;
         }
         System.out.print("Opção: ");
-        int cliente = scanner.nextInt();
+        int clienteIndex = scanner.nextInt();
         scanner.nextLine();
 
         boolean continuar = true;
@@ -75,7 +74,7 @@ public class Pizzaria {
             System.out.println("Qual o tamanho da pizza? ");
             System.out.println("Selecione um tamanho: ");
             for (TamanhoPizza tamanhos : Pizza.TamanhoPizza.values()) {
-                System.out.println(x+" - "+tamanhos);
+                System.out.println(x + " - " + tamanhos);
                 x++;
             }
             System.out.print("Opção: ");
@@ -100,16 +99,16 @@ public class Pizzaria {
                 x = 1;
                 for (String sabor : cardapio.getCardapio().keySet()) {
                     saboresList.add(sabor);
-                    System.out.println(x+" - "+sabor);
+                    System.out.println(x + " - " + sabor);
                     x++;
                 }
                 System.out.print("Opção: ");
                 int opcao = scanner.nextInt();
                 scanner.nextLine();
-                saboresSelect.add(saboresList.get(opcao-1));
+                saboresSelect.add(saboresList.get(opcao - 1));
             }
 
-            Pizza pizza = new Pizza(saboresSelect, cardapio.getPrecoJusto(saboresSelect), TamanhoPizza.getByIndex(tamanho-1));
+            Pizza pizza = new Pizza(saboresSelect, cardapio.getPrecoJusto(saboresSelect), TamanhoPizza.getByIndex(tamanho - 1));
             pizzas.add(pizza);
 
             System.out.println("Pizza cadastrada com sucesso!");
@@ -119,12 +118,25 @@ public class Pizzaria {
             int opcao = scanner.nextInt();
             scanner.nextLine();
 
-            if(opcao != 1){
+            if (opcao != 1) {
                 continuar = false;
             }
         }
-        Pedido pedido = new Pedido(listaPedidos.size()+1,listaClientes.get(cliente-1), pizzas, somarPizzas(pizzas));
+
+        double valorTotalPizzas = somarPizzas(pizzas);
+
+        // Solicitar a distância e calcular o frete
+        System.out.print("Digite a distância em km para entrega: ");
+        double distancia = scanner.nextDouble();
+        scanner.nextLine();
+
+        double frete = calcularFrete(distancia, pizzas.size());
+        double valorTotalPedido = valorTotalPizzas + frete;
+
+        Pedido pedido = new Pedido(listaPedidos.size() + 1, listaClientes.get(clienteIndex - 1), pizzas, valorTotalPedido);
         listaPedidos.add(pedido);
+
+        System.out.printf("Valor total do pedido (incluindo frete): R$ %.2f%n", valorTotalPedido);
     }
 
     private static double somarPizzas(List<Pizza> pizzas) {
@@ -135,13 +147,22 @@ public class Pizzaria {
         return valorTotal;
     }
 
+    private static double calcularFrete(double distancia, int quantidadePizzas) {
+        double valorPorKm = 2.0; // Custo por km
+        double valorPorPizza = 5.0; // Custo por pizza
+
+        double fretePorDistancia = distancia * valorPorKm;
+        double fretePorPeso = quantidadePizzas * valorPorPizza;
+
+        return fretePorDistancia + fretePorPeso;
+    }
+
     private static void alterarPedido(Scanner scanner, List<Pedido> listaPedidos, List<Cliente> listaClientes) {
         if (listaPedidos.isEmpty()) {
             System.out.println("Não há pedidos para alterar.");
             return;
         }
 
-        // Listar pedidos existentes
         System.out.println("Selecione o pedido que deseja alterar: ");
         for (int i = 0; i < listaPedidos.size(); i++) {
             Pedido pedido = listaPedidos.get(i);
@@ -158,7 +179,6 @@ public class Pizzaria {
 
         Pedido pedidoSelecionado = listaPedidos.get(pedidoIndex);
 
-        // Menu de opções para alterar o pedido
         boolean continuarAlterando = true;
         while (continuarAlterando) {
             System.out.println("Escolha o que deseja alterar: ");
@@ -171,7 +191,6 @@ public class Pizzaria {
 
             switch (opcao) {
                 case 1:
-                    // Alterar o cliente do pedido
                     System.out.println("Selecione o novo cliente: ");
                     for (int i = 0; i < listaClientes.size(); i++) {
                         Cliente cliente = listaClientes.get(i);
@@ -189,11 +208,9 @@ public class Pizzaria {
                     }
                     break;
                 case 2:
-                    // Alterar as pizzas do pedido
                     List<Pizza> novasPizzas = new ArrayList<>();
                     boolean continuarAdicionando = true;
                     while (continuarAdicionando) {
-                        // Reutilizando a lógica de fazerPedido para adicionar novas pizzas
                         System.out.println("Qual o tamanho da pizza? ");
                         int x = 1;
                         for (TamanhoPizza tamanhos : Pizza.TamanhoPizza.values()) {
@@ -236,7 +253,10 @@ public class Pizzaria {
                         }
                     }
                     pedidoSelecionado.setPizzas(novasPizzas);
-                    pedidoSelecionado.setValorTotal(somarPizzas(novasPizzas));
+
+                    // Recalcular o valor total após alteração
+                    double valorTotalPizzas = somarPizzas(novasPizzas);
+                    pedidoSelecionado.setValorTotal(valorTotalPizzas);
                     System.out.println("Pizzas do pedido alteradas com sucesso!");
                     break;
                 case 3:
@@ -248,7 +268,6 @@ public class Pizzaria {
             }
         }
     }
-
 
     private static Cliente adicionarCliente(Scanner scanner) {
         System.out.println("ADICIONAR CLIENTE");
@@ -266,8 +285,7 @@ public class Pizzaria {
         String email = scanner.nextLine();
         System.out.println();
 
-        Cliente cliente = new Cliente(nome, endereco, telefone, email);
-        return cliente;
+        return new Cliente(nome, endereco, telefone, email);
     }
 
     private static void gerarRelatorio() {
@@ -277,10 +295,10 @@ public class Pizzaria {
     private static void gerarListaClientes(List<Cliente> listaClientes) {
         int x = 1;
         if (listaClientes.isEmpty()) {
-            System.out.println("Lista de clientes esta vazia");
+            System.out.println("Lista de clientes está vazia");
         } else {
             for (Cliente cliente : listaClientes) {
-                System.out.println("Cliente "+x);
+                System.out.println("Cliente " + x);
                 System.out.println(cliente.getNome());
                 System.out.println(cliente.getEndereco());
                 System.out.println(cliente.getTelefone());
@@ -301,9 +319,8 @@ public class Pizzaria {
         Map<String, Integer> saborCount = new HashMap<>();
         Map<String, Set<String>> grafo = new HashMap<>();
 
-        // Processar os pedidos
         for (Pedido pedido : listaPedidos) {
-            faturamentoTotal += pedido.getValorTotal(); // Soma o valor do pedido
+            faturamentoTotal += pedido.getValorTotal();
 
             Set<String> saboresPedido = new HashSet<>();
             for (Pizza pizza : pedido.getPizzas()) {
@@ -313,7 +330,6 @@ public class Pizzaria {
                 }
             }
 
-            // Atualizar o grafo de sabores
             for (String sabor1 : saboresPedido) {
                 for (String sabor2 : saboresPedido) {
                     if (!sabor1.equals(sabor2)) {
@@ -323,20 +339,16 @@ public class Pizzaria {
             }
         }
 
-        // Exibir faturamento total
         System.out.printf("Faturamento Total: R$ %.2f%n", faturamentoTotal);
 
-        // Exibir sabores mais pedidos
         System.out.println("Sabores mais pedidos:");
         saborCount.entrySet().stream()
                 .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
                 .forEach(e -> System.out.printf("%s: %d pedidos%n", e.getKey(), e.getValue()));
 
-        // Exibir ligações entre os sabores
         System.out.println("Ligações entre sabores:");
         for (Map.Entry<String, Set<String>> entry : grafo.entrySet()) {
             System.out.printf("%s -> %s%n", entry.getKey(), entry.getValue());
         }
     }
-
 }
