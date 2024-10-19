@@ -1,8 +1,6 @@
 package Projeto;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 import Projeto.Pizza.TamanhoPizza;
 
@@ -40,7 +38,7 @@ public class Pizzaria {
                     System.out.println("Cliente adicionado com sucesso!");
                     break;
                 case 4:
-                    gerarRelatorio();
+                    gerarRelatorio(listaPedidos);
                     break;
                 case 5:
                     gerarListaClientes(listaClientes);
@@ -292,4 +290,53 @@ public class Pizzaria {
             }
         }
     }
+
+    private static void gerarRelatorio(List<Pedido> listaPedidos) {
+        if (listaPedidos.isEmpty()) {
+            System.out.println("Nenhum pedido realizado.");
+            return;
+        }
+
+        double faturamentoTotal = 0;
+        Map<String, Integer> saborCount = new HashMap<>();
+        Map<String, Set<String>> grafo = new HashMap<>();
+
+        // Processar os pedidos
+        for (Pedido pedido : listaPedidos) {
+            faturamentoTotal += pedido.getValorTotal(); // Soma o valor do pedido
+
+            Set<String> saboresPedido = new HashSet<>();
+            for (Pizza pizza : pedido.getPizzas()) {
+                for (String sabor : pizza.getSabores()) {
+                    saborCount.put(sabor, saborCount.getOrDefault(sabor, 0) + 1);
+                    saboresPedido.add(sabor);
+                }
+            }
+
+            // Atualizar o grafo de sabores
+            for (String sabor1 : saboresPedido) {
+                for (String sabor2 : saboresPedido) {
+                    if (!sabor1.equals(sabor2)) {
+                        grafo.computeIfAbsent(sabor1, k -> new HashSet<>()).add(sabor2);
+                    }
+                }
+            }
+        }
+
+        // Exibir faturamento total
+        System.out.printf("Faturamento Total: R$ %.2f%n", faturamentoTotal);
+
+        // Exibir sabores mais pedidos
+        System.out.println("Sabores mais pedidos:");
+        saborCount.entrySet().stream()
+                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+                .forEach(e -> System.out.printf("%s: %d pedidos%n", e.getKey(), e.getValue()));
+
+        // Exibir ligações entre os sabores
+        System.out.println("Ligações entre sabores:");
+        for (Map.Entry<String, Set<String>> entry : grafo.entrySet()) {
+            System.out.printf("%s -> %s%n", entry.getKey(), entry.getValue());
+        }
+    }
+
 }

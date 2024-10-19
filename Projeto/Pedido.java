@@ -8,23 +8,10 @@ public class Pedido {
     private List<Pizza> pizzas;
     private double valorTotal;
 
-    public Pedido(int id, Cliente cliente, List<Pizza> pizzas, double valorTotal){
+    public Pedido(int id, Cliente cliente, List<Pizza> pizzas, double valorTotal) {
         this.id = id;
         this.cliente = cliente;
         this.pizzas = pizzas;
-        this.valorTotal = valorTotal;
-    }
-
-    // Na classe Pedido
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
-    }
-
-    public void setPizzas(List<Pizza> pizzas) {
-        this.pizzas = pizzas;
-    }
-
-    public void setValorTotal(double valorTotal) {
         this.valorTotal = valorTotal;
     }
 
@@ -36,9 +23,23 @@ public class Pedido {
         return cliente;
     }
 
+    public List<Pizza> getPizzas() {
+        return pizzas;
+    }
+
+    public void setPizzas(List<Pizza> pizzas) {
+        this.pizzas = pizzas;
+    }
+
     public double getValorTotal() {
         return valorTotal;
     }
 
+    public void setValorTotal(double valorTotal) {
+        this.valorTotal = valorTotal;
+    }
 
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
 }
